@@ -1,10 +1,10 @@
 @ECHO off
 
-SET mypath=%~dp0..
+SET mypath=%~dp0..\bin
 cd %mypath%
 
 :: Execute java passing classpath
-java -cp .\bin src.app
+java -jar app.jar
 
 PAUSE
 EXIT

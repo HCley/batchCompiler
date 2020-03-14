@@ -1,9 +1,10 @@
 @ECHO off
 
-	SET commandPath=%~dp0
-	SET root=%commandPath%..
-	SET importPath=%commandPath%\paths
-	SET binPath=%root%\bin
+	SET "commandPath=%~dp0"
+	SET "root=%commandPath%..""
+	SET "importPath=%commandPath%\resources\assets"
+	SET "resourcesPath=%commandPath%\resources\"
+	SET "binPath=%root%\bin"
 	cd %binPath%
 
 	:: Open a new terminal pad and run the .java finder bat.
@@ -17,7 +18,7 @@
 	)
 	:: Open a new terminal pad and run the .class finder bat.
 	echo Finding compiled files...
-	start /wait cmd /k CALL %importPath%\build_router.bat
+	start /wait cmd /k CALL %resourcesPath%\build_router.bat
 	
 	GOTO :manifest
 
@@ -33,7 +34,7 @@
 	if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
 	cd %binPath%
 	:: Grab the paths of .class files found on bin
-	for /f %%i in (%importPath%\_class.txt) DO CALL :concat %%i
+	for /f %%i in (%importPath%\Build_Class.txt) DO CALL :concat %%i
 
 	:: Run over manifest and print file appVersion created and main class on terminal
 	echo Reading Manifest
@@ -47,7 +48,7 @@
 	echo !---- Running app ----!
 	:: Run jar file
 	start cmd /k CALL java -jar App.jar
-	PAUSE
+	TIMEOUT 5
 	EXIT
 
 
