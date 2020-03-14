@@ -1,7 +1,7 @@
 @ECHO off
 
 	SET "commandPath=%~dp0"
-	SET "root=%commandPath%..""
+	SET "root=%commandPath%.."
 	SET "importPath=%commandPath%\resources\assets"
 	SET "resourcesPath=%commandPath%\resources\"
 	SET "binPath=%root%\bin"
@@ -56,7 +56,6 @@
 :: Define which is the program appVersion
 :manifest
 	if NOT ["%ERRORLEVEL%"]==["0"]  EXIT /B 1
-
 	:: If the manifest already exist, it will catch the appVersion and the mainClass
 	if exist "%root%\manifest.txt" (
 		for /f "tokens=1,2 delims=" %%i in (%root%\manifest.txt) DO (
@@ -100,7 +99,6 @@ EXIT /B 1
 	) do (
 		SET mainClass=%%a
 	)
-
 	if NOT defined mainClass (
 		ECHO ERR: Main-Class not found on project.
 		ECHO Create one and try again.
@@ -110,6 +108,7 @@ EXIT /B 1
 
 	SET mainClass=%mainClass:.java=%
 	SET mainClass=%mainClass:\=.%
+
 
 	cd %binPath%
 	GOTO :EOF

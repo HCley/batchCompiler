@@ -17,10 +17,11 @@
 :findCommands
 	cd %root%
 
-	for /F "tokens=*" %%l in (%assetsPath%_AnnotationCommands.txt) do (
+	for /F "tokens=1" %%l in (%assetsPath%_AnnotationCommands.txt) do (
 		ECHO Cleaning existing routes of the command %%l
 		if exist "%exportPath%Command_%%l.txt" del /f "%exportPath%Command_%%l.txt"
-
+		ECHO %%l
+		PAUSE
 		call :searchThrough %%l
 	)
 	EXIT

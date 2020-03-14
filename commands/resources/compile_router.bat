@@ -11,7 +11,7 @@ ECHO Cleaning existing routes
 
 :: Research through the project due to find commands
 START /wait cmd /k call %resourcesPath%\Commander.bat
-PAUSE
+
 ECHO Searching routes on src...
 	:: Loop through src subfolders
 	for /f "tokens=*" %%i in ('dir /b /s /a:d "%srcPath%"') do (
@@ -45,5 +45,12 @@ EXIT
 		ECHO Tu não.
 		GOTO :EOF
 	)
+
+	ECHO %stringfy% | find ".java" > nul && (
 		@ECHO %1\%2>>%exportPath%Compile_Java.txt
+		GOTO :EOF
+	) || (
+		echo Throw out
+	)
+
 	GOTO :EOF
