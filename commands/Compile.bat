@@ -1,7 +1,7 @@
 :: @ECHO OFF
 :: Define path variables
 SET "resourcesPath=%~dp0resources\"
-SET "importPath=%resourcesPath%assets\"
+SET "importPath=%resourcesPath%assets\router_files\"
 SET "srcPath=%resourcesPath%..\..\src\"
 SET "binPath=%resourcesPath%..\..\bin\"
 cd %srcPath%

@@ -1,5 +1,6 @@
-	SET "exportPath=%~dp0assets\"
-	SET "binPath=%exportPath%..\..\..\bin\"
+
+	SET "exportPath=%~dp0assets\router_files\"
+	SET "binPath=%exportPath%..\..\..\..\bin\"
 	cd %exportPath%
 
 :: Remove existing paths

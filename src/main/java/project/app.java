@@ -9,14 +9,14 @@ public class app {
 
 	public static void main(String[] args) {
 		Writer fileWriter = Writer.getInstance();
+		log = log.getInstance();
 		setExceptionWay();
 
-		// try{
-		// 	System.out.println("What is inside args: " + args[0]);
-		// } catch(Exception e){
-		// 	System.out.println("Working fine.");
-		// }
-		System.out.println("What is inside args: " + args[0]);
+		try{
+			System.out.println("What is inside args: " + args[0]);
+		} catch(Exception e){
+			System.out.println("Working fine.");
+		}	
 	}
 
     private static void setExceptionWay(){

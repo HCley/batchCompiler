@@ -1,11 +1,14 @@
 @ECHO off
 
-	SET commandPath=%~dp0..\
-	SET root=%commandPath%..\
-	SET assetsPath=%commandPath%resources\assets\
-	SET exportPath=%assetsPath%Annotate_Classes\
-	SET srcPath=%root%\src\
+	SET "commandPath=%~dp0..\"
+	SET "root=%commandPath%..\"
+	SET "assetsPath=%commandPath%resources\assets\"
+	SET "exportPath=%assetsPath%Annotate_Classes\"
+	SET "srcPath=%root%\src\"
 
+	if NOT exist dir %exportPath% (
+		mkdir %exportPath%
+	)
 	
 	GOTO :findCommands
 
@@ -21,7 +24,6 @@
 		ECHO Cleaning existing routes of the command %%l
 		if exist "%exportPath%Command_%%l.txt" del /f "%exportPath%Command_%%l.txt"
 		ECHO %%l
-		PAUSE
 		call :searchThrough %%l
 	)
 	EXIT
