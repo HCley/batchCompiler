@@ -47,7 +47,7 @@
 
 	echo !---- Running app ----!
 	:: Run jar file
-	start cmd /k CALL java -jar App.jar
+	start cmd /k CALL %commandPath%\Execute.bat
 	TIMEOUT 5
 	EXIT
 
