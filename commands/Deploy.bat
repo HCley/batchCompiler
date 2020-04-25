@@ -1,5 +1,4 @@
 @ECHO OFF
-
 	SET "commandPath=%~dp0"
 	SET "root=%commandPath%.."
 	SET "importPath=%commandPath%resources\assets\router_files\"
@@ -17,9 +16,9 @@
 		EXIT
 	)
 	:: Open a new terminal pad and run the .class finder bat.
-	echo Finding compiled files...
-	start /wait cmd /k CALL %resourcesPath%\build_router.bat
-	
+	echo Routering compiled files...
+	start /wait cmd /k CALL %resourcesPath%\Router.bat 2
+
 	GOTO :manifest
 
 	ECHO GOT STRIKE
@@ -29,8 +28,8 @@
 
 
 
-:: Create manifest and jar file 
-:generateJar
+:: Create manifest and jar file
+:generate.Jar
 	if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
 	cd %binPath%
 	:: Grab the paths of .class files found on bin
@@ -51,7 +50,27 @@
 	TIMEOUT 5
 	EXIT
 
+:: Create manifest and jar file
+:generate.exe
+		if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
+		cd %binPath%
+		:: Grab the paths of .class files found on bin
+		for /f %%i in (%importPath%\Build_Class.txt) DO CALL :concat %%i
 
+		:: Run over manifest and print file appVersion created and main class on terminal
+		echo Reading Manifest
+		for /f "tokens=1,2 delims=" %%i in (%root%\manifest.txt) DO echo %%i %%j
+
+		:: Generate jarfile
+		echo Generating JAR package
+		jar cvfm app.jar %root%\manifest.txt %classFiles%
+
+
+		echo !---- Running app ----!
+		:: Run jar file
+		start cmd /k CALL %commandPath%\Execute.bat
+		TIMEOUT 5
+		EXIT
 
 :: Define which is the program appVersion
 :manifest
@@ -65,7 +84,7 @@
 			if NOT defined appVersion (
 				CALL :grabAppVersion %%i %%j
 			)
-		)	
+		)
 	)
 
 	:: If the manifest doesn't exist, this will define de appVersion and ask the mainClass name
@@ -88,22 +107,24 @@ EXIT /B 1
 	cd %root%
 	echo Manifest-Version: %appVersion% >%root%\manifest.txt
 	echo Main-Class: %mainClass% >>%root%\manifest.txt
-	GOTO :generateJar
+	GOTO :generate.Jar
 
 :: Search through the project by the main class
 :findMainClass
 	cd %root%
 
-	for /F "delims=" %%a in (
-		'findstr /S /I /M /C:"public static void main" *.*'
-	) do (
-		SET mainClass=%%a
+	if exist %annotateClassesPath% (
+		for /f "tokens=1" %%i in (%annotateClassesPath%\Files_Main.txt) DO SET "mainClass=%%i"
+		SET "mainClass=%mainClass:java.=%"
+		SET "mainClass=%mainClass:\=.%"
 	)
-	if NOT defined mainClass (
-		ECHO ERR: Main-Class not found on project.
-		ECHO Create one and try again.
-			PAUSE
-		EXIT /B 1
+
+	if NOT exist %annotateClassesPath% (
+		for /F "delims=" %%a in (
+			'findstr /S /I /M /C:"public static void main" *.*'
+		) do (
+			SET mainClass=%%a
+		)
 	)
 
 	SET mainClass=%mainClass:.java=%

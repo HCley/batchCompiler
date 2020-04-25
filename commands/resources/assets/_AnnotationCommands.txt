@@ -1,0 +1,3 @@
+IgnoreClass :- Ignore class on building process. *Do not compile it on javac.
+TODO		:- Create a list os pending tasks to do
+Main		:- If the program uses multiples main classes, is recommended that use the main notation

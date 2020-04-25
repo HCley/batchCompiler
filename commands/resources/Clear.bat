@@ -1,26 +1,27 @@
 @ECHO off
 
-	SET "commandPath=%~dp0..\"
-	SET "assetsPath=%commandPath%resources\assets\"
-	SET "routerFilesPath=%assetsPath%router_files\"
-	SET "annotatePath=%assetsPath%Annotate_Classes\"
-	SET "root=%commandPath%..\"
-	SET "binPath=%root%bin"
+	SET "resourcesPath=%~dp0"
+	SET "rootPath=%resourcesPath:commands\resources\=%"
+	SET "srcPath=%rootPath%src\"
+	SET "binPath=%rootPath%bin\"
+	SET "assetsPath=%rootPath%commands\resources\assets\"
+	SET "routerFilesPath=%rootPath%commands\resources\assets\router_files\"
+	SET "annotatePath=%rootPath%commands\resources\assets\Annotate_Classes\"
 
-	ECHO Cleaning bin
 	:: Clear every previous built file
 	if exist dir %binPath%\src (
+		ECHO Cleaning bin
 		@RD /s /q %binPath%
 	)
 
-	ECHO Cleaning compiled and built routes
 	:: Clear every previous compiled file
 	if exist dir %routerFilesPath% (
+		ECHO Cleaning compiled and built routes
 		@RD /s /q %routerFilesPath%
 	)
 
-	ECHO Cleaning commanded classes path
 	:: Clear every previous commanded classes
 	if exist dir %annotatePath% (
+		ECHO Cleaning commanded classes path
 		@RD /s /q %annotatePath%
 	)
