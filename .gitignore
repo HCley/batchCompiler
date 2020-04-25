@@ -36,4 +36,5 @@ hs_err_pid*
 
 # Commands resources and tools
 !commands/resources/assets/_AnnotationCommands.txt
+!commands/resources/assets/Dependencies.txt
 !commands/resources/assets/languages.txt
