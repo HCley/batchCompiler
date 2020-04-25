@@ -11,11 +11,16 @@
 	SET "assetsPath=%rootPath%commands\resources\assets\"
 	SET "exportPath=%rootPath%commands\resources\assets\router_files\"
 	SET "importPath=%rootPath%commands\resources\assets\Annotate_Classes\"
-	if "%1" EQU "1" (
+	SET "invokeParam=%1"
+
+	if NOT defined "%invokeParam%" (
+		SET "invokeParam=1"
+	)
+	if "%invokeParam%" EQU "1" (
 		SET "searchThrough=%srcPath%"
 		SET "ExportName=Compile_"
 	)
-	if "%1" EQU "2" (
+	if "%invokeParam%" EQU "2" (
 		SET "searchThrough=%binPath%"
 		SET "ExportName=Build_"
 	)
@@ -27,22 +32,23 @@
 
 
 :: Loop through all languages to compile
-for /f "tokens=%1" %%f in (%assetsPath%languages.txt) do (
+for /f "tokens=%invokeParam%" %%f in (%assetsPath%languages.txt) do (
+
+	@ECHO %%f
 
 	:: Remove existing paths
 	CALL :clear %%f
 
-	ECHO Searching routes through %searchThrough% folder for %%f ...
-
 	:: Loop through src subfolders
+	@ECHO Searching routes through %searchThrough% folder for %%f ...
 	for /f "tokens=*" %%i in ('dir /b /s /a:d "%searchThrough%"') do (
 		@ECHO searching through %%i
-		
+
 			:: Verify if do exist a .%%f_ file on the folder
 			:: Concatenate on the .txt the new path
 			if exist %%i\*.%%f (
 				for /f "tokens=*" %%j in ('dir /b "%%i"') do (
-					CALL :concat %%i %%j %%f %1
+					CALL :concat %%i %%j %%f %invokeParam%
 				)
 			)
 			@ECHO %%i
