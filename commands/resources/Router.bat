@@ -26,10 +26,11 @@
 		SET "ExportName=Build_"
 	)
 
-	if NOT exist dir %exportPath% (
-		mkdir %exportPath%
-	)
+	:: Create a export folder if it doesn't exist
+	@ECHO Creating bin folder
+	if NOT exist %exportPath% MKDIR %exportPath%
 
+cd %rootPath%
 
 :: Loop through all languages to compile
 for /f "tokens=%invokeParam%" %%f in (%assetsPath%languages.txt) do (

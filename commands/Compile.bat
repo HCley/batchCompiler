@@ -4,6 +4,7 @@
 	SET "rootPath=%commandsPath:commands\=%"
 	SET "srcPath=%rootPath%src\"
 	SET "binPath=%rootPath%bin\"
+	SET "targetPath=%rootPath%bin\target\"
 	SET "assetsPath=%rootPath%commands\resources\assets\"
 	SET "resourcesPath=%rootPath%commands\resources\"
 	SET "importPath=%rootPath%commands\resources\assets\router_files\"
@@ -25,6 +26,10 @@
 	:: Create a bin folder if it doesn't exist
 	@ECHO Creating bin folder
 	if NOT exist %binPath% MKDIR %binPath%
+
+	:: Create a target folder if it doesn't exist
+	@ECHO Creating target folder
+	if NOT exist %targetPath% MKDIR %targetPath%
 
 	for /f "tokens=1" %%f in (%assetsPath%languages.txt) do (
 		:: Grab the paths of .java files found on src
@@ -76,7 +81,7 @@ EXIT
 
 	:: If everything goes right, move the .exe compiled file to bin
 	if ["%ERRORLEVEL%"]==["0"] (
-		MOVE %mainName%.exe %binPath%
+		MOVE %mainName%.exe %targetPath%
 	)
 
 	:: If an error has been found, pause batch
