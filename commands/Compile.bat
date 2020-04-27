@@ -84,8 +84,9 @@ EXIT
 	if NOT ["%ERRORLEVEL%"]==["0"] (
 		@ECHO There was a problem compilling C
 		PAUSE
+		EXIT /B 1
 	)
-	EXIT /B 0
+	REM PAUSE
 	GOTO :EOF
 
 
