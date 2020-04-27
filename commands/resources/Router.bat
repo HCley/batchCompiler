@@ -13,7 +13,8 @@
 	SET "importPath=%rootPath%commands\resources\assets\Annotate_Classes\"
 	SET "invokeParam=%1"
 
-	if NOT defined "%invokeParam%" (
+
+	if NOT defined invokeParam (
 		SET "invokeParam=1"
 	)
 	if "%invokeParam%" EQU "1" (
@@ -24,7 +25,6 @@
 		SET "searchThrough=%binPath%"
 		SET "ExportName=Build_"
 	)
-
 
 	if NOT exist dir %exportPath% (
 		mkdir %exportPath%
@@ -56,8 +56,7 @@ EXIT
 
 :: Called on loop to concatenate all the files path
 :concat
-	SET stringfy=%1\%2
-	SET stringfy=%stringfy:*src=src%
+	SET "stringfy=%1\%2"
 	ECHO %stringfy% | find ".%3" > nul && (
 		@ECHO %1\%2>>%exportPath%%ExportName%%3.txt
 		ECHO Saved on file as %1\%2;

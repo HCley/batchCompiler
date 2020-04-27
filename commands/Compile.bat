@@ -84,6 +84,7 @@ EXIT
 		@ECHO There was a problem compilling C
 		PAUSE
 	)
+	EXIT /B 0
 	GOTO :EOF
 
 

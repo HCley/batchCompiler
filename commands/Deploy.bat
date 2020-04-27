@@ -14,7 +14,7 @@
 	if NOT ["%ERRORLEVEL%"]==["0"] (
 		ECHO Fail compiling, the program could not be deployed.
 		PAUSE
-		EXIT
+		EXIT /B 1
 	)
 	:: Open a new terminal pad and run the .class finder bat.
 	echo Routering compiled files...
@@ -32,6 +32,7 @@
 	ECHO The language does not need a deploy or do not have one.
 	PAUSE
 		if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
+		if ["%ERRORLEVEL%"]==["0"] EXIT /B 0
 :: END
 
 :: Create and jar file
@@ -56,6 +57,23 @@
 	TIMEOUT 5
 	EXIT
 
+
+:: Create and jar file
+:generate.exe
+	if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
+	cd %binPath%
+
+	:: Run over manifest and print file appVersion created and main class on terminal
+	echo Reading Manifest
+	for /f "tokens=1,2 delims=" %%i in (%rootPath%manifest.txt) DO echo %%i %%j
+
+	echo !---- Running app ----!
+	:: Run exe file
+	start cmd /k CALL %commandsPath%Execute.bat
+	TIMEOUT 5
+	EXIT
+
+
 :: Define which is the program appVersion
 :manifest
 	if NOT ["%ERRORLEVEL%"]==["0"]  EXIT /B 1
@@ -77,7 +95,7 @@
 		SET appVersion=1
 		CALL :findMainClass %1
 	)
-
+	
 	GOTO :generateManifest %1
 
 ECHO ERR: Unexpected error
@@ -91,7 +109,9 @@ EXIT /B 1
 	cd %rootPath%
 	echo Manifest-Version: %appVersion% >%rootPath%manifest_%1.txt
 	echo Main-Class: %mainClass% >>%rootPath%manifest_%1.txt
-	GOTO :generate.Jar
+
+	if "%1" EQU "class" ( GOTO :generate.Jar)
+	if "%1" EQU "exe" ( GOTO :generate.exe)
 
 :: Used to find the main class
 :findMainClass
