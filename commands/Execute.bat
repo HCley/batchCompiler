@@ -15,8 +15,18 @@
 			CALL :manifest %%m
 		)
 	)
-        SET mainName=%mainName:.*=%
-        %mainName%.exe
+
+
+
+        if "%language%" EQU "java" (
+            java -jar %mainName%.jar ::PARAM
+        )
+
+        if "%language%" EQU "c" (
+            %mainName%.exe ::PARAM
+        )
+
+
 
     PAUSE
     EXIT
@@ -40,14 +50,8 @@
 
 :: Called on manifest loop to grab the manifest mainClass
 :grabMainName
-    ECHO grabMainName %1 %2 %3
     SET mainName=%2
-
-    ECHO %mainName%
-
     CALL :getMainName
-
-    ECHO %mainName%
 
 	if NOT defined mainName (
         ECHO ERR: Main file not found.
