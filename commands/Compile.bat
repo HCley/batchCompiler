@@ -4,9 +4,10 @@
 	SET "rootPath=%commandsPath:commands\=%"
 	SET "srcPath=%rootPath%src\"
 	SET "binPath=%rootPath%bin\"
+	SET "assetsPath=%rootPath%commands\resources\assets\"
 	SET "resourcesPath=%rootPath%commands\resources\"
-	SET "importPath=%rootPath%resources\assets\router_files\"
-	SET "annotateClassesPath=%rootPath%resources\assets\Annotate_Classes\"
+	SET "importPath=%rootPath%commands\resources\assets\router_files\"
+	SET "annotateClassesPath=%rootPath%commands\resources\assets\Annotate_Classes\"
 	cd %srcPath%
 
 	:: Call batch file to find all .java on project
@@ -19,17 +20,17 @@
 
 	:: Clear every previous compiled file
 	@ECHO Removing exist compiled files
-	if exist dir %binPath%\src ( @RD /s /q %binPath%src )
+	if exist dir %binPath%src ( @RD /s /q %binPath%src )
+
 	:: Create a bin folder if it doesn't exist
 	@ECHO Creating bin folder
 	if NOT exist %binPath% MKDIR %binPath%
 
-	for /f "tokens=%1" %%f in (%assetsPath%languages.txt) do (
+	for /f "tokens=1" %%f in (%assetsPath%languages.txt) do (
 		:: Grab the paths of .java files found on src
-		if exist %importPath%\Compile_%%f.txt (
+		if exist %importPath%Compile_%%f.txt (
 			@ECHO Concatenating all %%f source codes
 			for /f %%i in (%importPath%Compile_%%f.txt) DO call :concat %%i
-
 			CALL :compile %%f
 		)
 	)
@@ -58,13 +59,15 @@ EXIT
 	if NOT ["%ERRORLEVEL%"]==["0"] PAUSE
 	GOTO :EOF
 
-:_compiler
+
+:c_compiler
 	@ECHO Compilling C files
-	cd %binPath%src\main\c
+	cd %srcPath%
 
 	:: Call C Compiler, define bin path and .c routes
-	gcc -Wall sourceCode
+	gcc -Wall %sourceCode%
 
+	MOVE a.exe %binPath%
 	REM TODO
 	REM MOVE ALL COMPILED FILES TO THE RIGHT BIN FOLDER
 
@@ -72,13 +75,15 @@ EXIT
 	@ECHO There was a problem compilling C
 	if NOT ["%ERRORLEVEL%"]==["0"] PAUSE
 
+
+
 :: Used to find the main class
 :findMainClass
 	cd %rootPath%
 
 
 	if exist %annotateClassesPath% (
-		for /f "tokens=1" %%i in (%annotateClassesPath%\Files_Main.txt) DO SET "mainClass=%%i"
+		for /f "tokens=1" %%i in (%annotateClassesPath%Files_Main.txt) DO SET "mainClass=%%i"
 		SET "mainClass=%mainClass:java.=%"
 		SET "mainClass=%mainClass:\=.%"
 	)

@@ -34,15 +34,13 @@
 :: Loop through all languages to compile
 for /f "tokens=%invokeParam%" %%f in (%assetsPath%languages.txt) do (
 
-	@ECHO %%f
-
 	:: Remove existing paths
 	CALL :clear %%f
 
 	:: Loop through src subfolders
-	@ECHO Searching routes through %searchThrough% folder for %%f ...
+	ECHO Searching routes through %searchThrough% folder for %%f ...
 	for /f "tokens=*" %%i in ('dir /b /s /a:d "%searchThrough%"') do (
-		@ECHO searching through %%i
+		ECHO searching through %%i
 
 			:: Verify if do exist a .%%f_ file on the folder
 			:: Concatenate on the .txt the new path
@@ -51,7 +49,7 @@ for /f "tokens=%invokeParam%" %%f in (%assetsPath%languages.txt) do (
 					CALL :concat %%i %%j %%f %invokeParam%
 				)
 			)
-			@ECHO %%i
+			ECHO %%i
 		)
 	)
 EXIT

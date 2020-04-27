@@ -6,7 +6,7 @@
 	SET "assetsPath=%rootPath%commands\resources\assets\"
 	SET "importPath=%rootPath%commands\resources\assets\"
 	SET "exportPath=%rootPath%commands\resources\assets\Annotate_Classes\"
-	SET "commandsPath=%rootPath%commands\resources\assets\SpecialCommands\"
+	SET "specialCommandsPath=%rootPath%commands\resources\assets\SpecialCommands\"
 
 	if NOT exist dir %exportPath% (
 		mkdir %exportPath%
@@ -21,7 +21,7 @@
 
 :: List the structured commands to search for
 :findCommands
-	cd %root%
+cd %root%
 
 	for /F "tokens=1" %%l in (%importPath%_AnnotationCommands.txt) do (
 
@@ -31,9 +31,9 @@
 		ECHO Searching through project for %%l
 		call :searchThrough %%l
 
-		if exist "%exportPath%Command_%%l.txt" (
+		if exist "%exportPath%Files_%%l.txt" (
 			ECHO Executing command %%l found
-			start /wait cmd /k CALL %commandsPath%Command_%%l.bat
+			start /wait cmd /k CALL %specialCommandsPath%Command_%%l.bat
 		)
 	)
 EXIT

@@ -9,7 +9,7 @@
 	SET "annotatePath=%rootPath%commands\resources\assets\Annotate_Classes\"
 
 	:: Clear every previous built file
-	if exist dir %binPath%\src (
+	if exist dir %binPath%src (
 		ECHO Cleaning bin
 		@RD /s /q %binPath%
 	)

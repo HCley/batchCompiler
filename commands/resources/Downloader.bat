@@ -18,14 +18,10 @@
         @ECHO Downloading %%h%%f on %%g of %%i
         cd "%rootPath%%%g"
         curl %%i --output %%h%%f
-        if NOT ["%ERRORLEVEL%"]==["0"] (
-            PAUSE
-            EXIT
-        )
 
-        if %%f EQU ".tar" (tar -xvf %%h%%f)
-        if %%f EQU ".rar" (unrar e %%h%%f)
-        if %%f EQU ".zip" (wzunzip %%h%%f)
+        if "%%f" EQU ".tar" (tar -xvf %%h%%f)
+        if "%%f" EQU ".rar" (unrar e %%h%%f)
+        REM if "%%f" EQU ".zip" (wzunzip %%h%%f)
         if NOT ["%ERRORLEVEL%"]==["0"] (
             PAUSE
             EXIT
@@ -33,5 +29,14 @@
         del %%h%%f
     )
 
-    REM tar -xvf test_cases.tar
+    CALL :extractCases
 EXIT
+
+
+:extractCases
+    cd %testCasesPath%
+    @ECHO Extracting cases
+    for /f "tokens=*" %%j in ('dir /b "%testCasesPath%"') do (
+        gzip -d %%j
+    )
+    GOTO :EOF

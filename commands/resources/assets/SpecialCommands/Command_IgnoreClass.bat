@@ -2,7 +2,7 @@
 
     SET "commandsPath=%~dp0"
     SET "rootPath=%commandsPath:commands\resources\assets\SpecialCommands\=%"
-    SET "srcPath=%rootPath%\src\"
+    SET "srcPath=%rootPath%src\"
     SET "assetsPath=%rootPath%commands\resources\assets\"
 	SET "exportPath=%rootPath%commands\resources\assets\router_files\"
     SET "importPath=%rootPath%commands\resources\assets\Annotate_Classes\"
