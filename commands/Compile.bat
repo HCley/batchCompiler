@@ -36,18 +36,14 @@
 		if exist %importPath%Compile_%%f.txt (
 			@ECHO Concatenating all %%f source codes
 			for /f %%i in (%importPath%Compile_%%f.txt) DO call :concat %%i
-			CALL :compile %%f
+			CALL :%%f_compiler %%f
 		)
 	)
 
 EXIT
 
 
-:: This method is used to select the right compiler
-:compile
-	if "%1"=="c" call :c_compiler %1
-	if "%1"=="java" call :java_compiler %1
-	GOTO :EOF
+
 
 
 :: Used to call java compiler
@@ -91,6 +87,9 @@ EXIT
 	)
 	EXIT /B 0
 	GOTO :EOF
+
+
+
 
 
 :: Used to find the main class
