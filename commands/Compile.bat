@@ -12,7 +12,7 @@
 
 	:: Call batch file to find all .java on project
 	@ECHO Routering source code files
-	start /wait cmd /k call %resourcesPath%Router.bat 1
+	START /wait cmd /k call %resourcesPath%Router.bat 1
 
 	:: Research through the project due to find commands
 	@ECHO Finding and executing special commands
@@ -40,15 +40,15 @@ EXIT
 
 :: This method is used to select the right compiler
 :compile
-	if "%1"=="c" call :c_compiler
-	if "%1"=="java" call :java_compiler
+	if "%1"=="c" call :c_compiler %1
+	if "%1"=="java" call :java_compiler %1
 	GOTO :EOF
 
 
 :: Used to call java compiler
 :java_compiler
 	@ECHO Compilling Java files
-	call :findMainClass "java"
+	call :findMainClass %1
 	cd %srcPath%
 
 	:: Call java Compiler, define bin path and .java routes
@@ -62,33 +62,44 @@ EXIT
 
 :c_compiler
 	@ECHO Compilling C files
+	call :findMainClass %1
 	cd %srcPath%
 
-	:: Call C Compiler, define bin path and .c routes
-	gcc -Wall %sourceCode%
+	:: Get main file name to define output file name
+	SET "mainName=%mainClass%"
+	SET "mainName=%mainName:.c=%"
+	echo %mainName%|find "\" >nul
+	    if NOT ["%ERRORLEVEL%"]==["1"] (CALL :getMainName)
 
-	MOVE a.exe %binPath%
-	REM TODO
-	REM MOVE ALL COMPILED FILES TO THE RIGHT BIN FOLDER
+	:: Call C Compiler, define bin path and .c routes
+	gcc -Wall %sourceCode% -o %mainName%
+
+	:: If everything goes right, move the .exe compiled file to bin
+	if ["%ERRORLEVEL%"]==["0"] (
+		MOVE %mainName%.exe %binPath%
+	)
 
 	:: If an error has been found, pause batch
-	@ECHO There was a problem compilling C
-	if NOT ["%ERRORLEVEL%"]==["0"] PAUSE
-
+	if NOT ["%ERRORLEVEL%"]==["0"] (
+		@ECHO There was a problem compilling C
+		PAUSE
+	)
+	GOTO :EOF
 
 
 :: Used to find the main class
 :findMainClass
-	cd %rootPath%
+	cd %srcPath%
 
-
-	if exist %annotateClassesPath% (
-		for /f "tokens=1" %%i in (%annotateClassesPath%Files_Main.txt) DO SET "mainClass=%%i"
-		SET "mainClass=%mainClass:java.=%"
-		SET "mainClass=%mainClass:\=.%"
+	if exist "%annotateClassesPath%Files_Main.txt" (
+		for /f "tokens=1" %%a in (%annotateClassesPath%Files_Main.txt) DO (
+			SET "mainClass=%%a"
+			GOTO :EOF
+		)
 	)
 
-	if NOT exist %annotateClassesPath% (
+	if "%1" EQU "java" (
+		ECHO not There
 		for /F "delims=" %%a in (
 			'findstr /S /I /M /C:"public static void main" *.*'
 		) do (
@@ -96,6 +107,13 @@ EXIT
 		)
 	)
 
+	if "%1" EQU "c" (
+		for /F "delims=" %%a in (
+			'findstr /S /I /M /C:"int main" *.*'
+		) do (
+			SET "mainClass=%%a"
+		)
+	)
 
 	if NOT defined mainClass (
 		ECHO ERR: Main-Class not found on project.
@@ -113,3 +131,10 @@ EXIT
 	SET stringfy=%stringfy:*src=.%
 	SET sourceCode=%sourceCode% %stringfy%
 	GOTO :EOF
+
+:: Used to remove all "\" on mainClass to get main file name
+:getMainName
+    SET "mainName=%mainName:*\=%"
+        echo %mainName%|find "\" >nul
+            if NOT ["%ERRORLEVEL%"]==["1"] (CALL :getMainName)
+    GOTO :EOF

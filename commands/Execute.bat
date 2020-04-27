@@ -4,7 +4,8 @@ SET "binPath=%~dp0..\bin"
 cd %binPath%
 
 :: Execute java passing classpath
-java -jar app.jar 12
+    REM java -jar app.jar 12
+    a.exe
 
 PAUSE
 EXIT

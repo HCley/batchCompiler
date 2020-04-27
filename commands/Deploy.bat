@@ -25,7 +25,7 @@
 		if exist %importPath%Build_%%f.txt (
 			@ECHO Concatenating all %%f source codes
 			for /f %%i in (%importPath%Compile_%%f.txt) DO call :concat %%i
-			CALL :compile %%f
+			CALL :manifest %%f
 		)
 	)
 
@@ -34,12 +34,7 @@
 		if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
 :: END
 
-:: This method is used to select the right compiler
-:compile
-	if "%1"=="class" GOTO :manifest
-	GOTO :EOF
-
-:: Create manifest and jar file
+:: Create and jar file
 :generate.Jar
 	if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
 	cd %binPath%
@@ -65,10 +60,10 @@
 :manifest
 	if NOT ["%ERRORLEVEL%"]==["0"]  EXIT /B 1
 	:: If the manifest already exist, it will catch the appVersion and the mainClass
-	if exist "%rootPath%manifest.txt" (
-		for /f "tokens=1,2 delims=" %%i in (%rootPath%manifest.txt) DO (
+	if exist "%rootPath%manifest_%1.txt" (
+		for /f "tokens=1,2 delims=" %%i in (%rootPath%manifest_%1.txt) DO (
 			if defined appVersion (
-				CALL :grabMainClass %%i %%j
+				CALL :grabMainClass %%i %%j %1
 			)
 			if NOT defined appVersion (
 				CALL :grabAppVersion %%i %%j
@@ -77,15 +72,15 @@
 	)
 
 	:: If the manifest doesn't exist, this will define de appVersion and ask the mainClass name
-	if NOT exist "%rootPath%manifest.txt" (
-		ECHO Manifest not found. Generating a new one...
+	if NOT exist "%rootPath%manifest_%1.txt" (
+		ECHO Manifest not found. Generating a manifest...
 		SET appVersion=1
-		CALL :findMainClass
+		CALL :findMainClass %1
 	)
 
-	GOTO :generateManifest
+	GOTO :generateManifest %1
 
-ECHO ERR: Unespected error
+ECHO ERR: Unexpected error
 PAUSE
 EXIT /B 1
 
@@ -94,21 +89,23 @@ EXIT /B 1
 :generateManifest
 	if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
 	cd %rootPath%
-	echo Manifest-Version: %appVersion% >%rootPath%manifest.txt
-	echo Main-Class: %mainClass% >>%rootPath%manifest.txt
+	echo Manifest-Version: %appVersion% >%rootPath%manifest_%1.txt
+	echo Main-Class: %mainClass% >>%rootPath%manifest_%1.txt
 	GOTO :generate.Jar
 
-:: Search through the project by the main class
+:: Used to find the main class
 :findMainClass
-	cd %rootPath%
+	cd %srcPath%
 
-	if exist %annotateClassesPath% (
-		for /f "tokens=1" %%i in (%annotateClassesPath%Files_Main.txt) DO SET "mainClass=%%i"
-		SET "mainClass=%mainClass:java.=%"
-		SET "mainClass=%mainClass:\=.%"
+	if exist "%annotateClassesPath%Files_Main.txt" (
+		for /f "tokens=1" %%a in (%annotateClassesPath%Files_Main.txt) DO (
+			SET "mainClass=%%a"
+			GOTO :EOF
+		)
 	)
 
-	if NOT exist %annotateClassesPath% (
+	if "%1" EQU "java" (
+		ECHO not There
 		for /F "delims=" %%a in (
 			'findstr /S /I /M /C:"public static void main" *.*'
 		) do (
@@ -116,18 +113,29 @@ EXIT /B 1
 		)
 	)
 
-	SET mainClass=%mainClass:.java=%
-	SET mainClass=%mainClass:\=.%
+	if "%1" EQU "c" (
+		for /F "delims=" %%a in (
+			'findstr /S /I /M /C:"int main" *.*'
+		) do (
+			SET "mainClass=%%a"
+		)
+	)
 
+	if NOT defined mainClass (
+		ECHO ERR: Main-Class not found on project.
+		ECHO Create one and try again.
+			PAUSE
+		EXIT /B 1
+	)
 
-	cd %binPath%
 	GOTO :EOF
+
 
 :: Called on manifest loop to grab the manifest mainClass
 :grabMainClass
 	SET mainClass=%2
 	if NOT defined mainClass (
-		call :findMainClass
+		call :findMainClass %3
 	)
 	GOTO :EOF
 
