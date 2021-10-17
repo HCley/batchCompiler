@@ -2,10 +2,10 @@
 
 	SET "resourcesPath=%~dp0"
 	SET "rootPath=%resourcesPath:commands\resources\=%"
-    SET "assetsPath=%rootPath%commands\resources\assets\"
-	SET "srcPath=%rootPath%src\"
-    SET "testPath=%rootPath%src\main\Test\"
+    SET "assetsPath=%resourcesPath%assets\"
+    SET "dependenciesPath=%assets%Dependencies"
     SET "testCasesPath=%rootPath%src\main\Test\Cases\"
+    SET "LOGGER=%resourcesPath%Logger.bat"
 
     cd %testCasesPath%
 
@@ -14,14 +14,13 @@
     :: %%g -> Download to path ()
     :: %%h -> Output name
     :: %%i -> URL
-    for /f "tokens=1,2,3,4 skip=1" %%f in (%assetsPath%Dependencies.txt) do (
-        @ECHO Downloading %%h%%f on %%g of %%i
+    for /f "tokens=1,2,3,4 skip=1" %%f in (%dependenciesPath%) do (
+        CALL %LOGGER% INFO "Downloading %%h%%f on %%g of %%i"
         cd "%rootPath%%%g"
         curl %%i --output %%h%%f
 
         if "%%f" EQU ".tar" (tar -xvf %%h%%f)
         if "%%f" EQU ".rar" (unrar e %%h%%f)
-        REM if "%%f" EQU ".zip" (wzunzip %%h%%f)
         if NOT ["%ERRORLEVEL%"]==["0"] (
             PAUSE
             EXIT
@@ -30,12 +29,12 @@
     )
 
     CALL :extractCases
-EXIT
+EXIT /B 0
 
 
 :extractCases
     cd %testCasesPath%
-    @ECHO Extracting cases
+    CALL %LOGGER% INFO "Extracting cases"
     for /f "tokens=*" %%j in ('dir /b "%testCasesPath%"') do (
         gzip -d %%j
     )

@@ -1,0 +1,1 @@
+IgnoreClass :- Ignore class on building process. *Do not compile it on javac.

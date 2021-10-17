@@ -1,0 +1,3 @@
+lang | compiled file | main signature & delimiter = ,
+java,class,public static void main
+cpp,h,int main
