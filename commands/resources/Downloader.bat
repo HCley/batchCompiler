@@ -3,7 +3,7 @@
 	SET "resourcesPath=%~dp0"
 	SET "rootPath=%resourcesPath:commands\resources\=%"
     SET "assetsPath=%resourcesPath%assets\"
-    SET "dependenciesPath=%assets%Dependencies"
+    SET "dependenciesPath=%rootPath%Dependencies"
     SET "testCasesPath=%rootPath%src\main\Test\Cases\"
     SET "LOGGER=%resourcesPath%Logger.bat"
 

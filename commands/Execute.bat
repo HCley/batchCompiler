@@ -10,21 +10,26 @@
 	SET "binPath=%rootPath%bin\"
 	cd %targetPath%
 
-    for /f "tokens=1,2 delims=, skip=1" %%l in (%assetsPath%languages) do if exist %buildPath%Build_%%m (
-		:: Grab the paths of .java files found on src
-		SET "language=%%l"
-		CALL :manifest %%m
-	)
 
-    CALL :removeExtencion %mainName%
+	app.exe
 
-    if "%language%" EQU "java" (
-        java -jar %mainName%.jar ::PARAM
-    )
+ rem    for /f "tokens=1,2 delims=, skip=1" %%l in (%assetsPath%languages) do if exist %buildPath%Build_%%m (
+	rem 	:: Grab the paths of .java files found on src
+	rem 	SET "language=%%l"
+	rem 	CALL :manifest %%m
+	rem )
 
-    if "%language%" EQU "c" (
-        %mainName%.exe ::PARAM
-    )
+ rem    CALL :removeExtencion %mainName%
+
+	rem ECHO %language%
+ rem    if "%language%" EQU "java" (
+ rem        rem java -jar %mainName%.jar ::PARAM
+ rem        java -jar app.jar
+ rem    )
+
+ rem    if "%language%" EQU "cpp" (
+ rem        %mainName%.exe ::PARAM
+ rem    )
 
 cd %rootPath%
 EXIT /B 1

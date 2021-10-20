@@ -1,3 +1,3 @@
-lang | compiled file | main signature & delimiter = ,
-java,class,public static void main
-cpp,h,int main
+lang | compiled file | main signature | compiler |> delimiter = ,
+java,class,public static void main,javac
+cpp,o,int main,c++

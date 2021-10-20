@@ -32,12 +32,10 @@
 	CALL %LOGGER% INFO "Creating target folder"
 	if NOT exist %targetPath% MKDIR %targetPath%
 
-	for /f "tokens=1 delims=, skip=1" %%f in (%assetsPath%languages) do (
+	for /f "tokens=1,2 delims=, skip=1" %%f in (%assetsPath%languages) do (
 		:: Grab the paths of .java files found on src
 		if exist %routerFilesPath%Compile_%%f (
-			CALL %LOGGER% INFO "Concatenating all %%f source codes"
-			for /f %%i in (%routerFilesPath%Compile_%%f) DO CALL :concat %%i
-			CALL :%%f_compiler %%f
+			CALL :%%f_compiler %%f %%g
 		) else (
 			CALL %LOGGER% INFO+ "Not exists %routerFilesPath%Compile_%%f"
 			CALL %LOGGER% INFO- "Not exists Compile_%%f"
@@ -52,12 +50,22 @@ EXIT /B 0
 
 :: Used to call Java compiler
 :java_compiler
+	cd %srcPath%
+	SET "sourceCode="
+	CALL %LOGGER% INFO "Concatenating all %1 source codes"
+	for /f %%i in (%routerFilesPath%Compile_%1) DO CALL :concat %%i
+
 	CALL %LOGGER% INFO "Compilling Java files"
 	CALL :findMainClass %1
 	cd %srcPath%
 
-	:: Call java Compiler, define bin path and .java routes
-	javac -cp .\%mainClass% -d %binPath% %sourceCode%
+	for /f "tokens=1,4 delims=, skip=1" %%b in (%assetsPath%languages) DO (
+		if "%%b" EQU "%1" (
+			:: Call java Compiler, define bin path and .java routes
+			CALL %LOGGER% INFO+ "Compilling Java files: %%c -cp .\%mainClass% -d %binPath% %sourceCode%"
+			%%c -cp .\%mainClass% -d %binPath% %sourceCode%
+		)
+	)
 
 	:: If an error has been found, pause batch
 	if NOT ["%ERRORLEVEL%"]==["0"] ( 
@@ -68,8 +76,11 @@ cd %rootPath%
 GOTO :EOF
 
 
+
+
 :: Used to call C++ compiler
 :cpp_compiler
+	SETLOCAL EnableDelayedExpansion
 	CALL %LOGGER% INFO "Compilling C++ files"
 	CALL :findMainClass %1
 	cd %srcPath%
@@ -80,26 +91,65 @@ GOTO :EOF
 	@ECHO %mainName%|find "\" > nul
 	    if NOT ["%ERRORLEVEL%"]==["1"] (CALL :getMainName)
 
-	:: Call C Compiler, define bin path and .c routes
-	c++ -Wall %sourceCode% -o %mainName%
+	:: Gets the correct compiler to the language
+	for /f "tokens=1,4 delims=, skip=1" %%b in (%assetsPath%languages) DO (
+		::Tests if the language is equals the language running
+		if "%%b" EQU "%1" (
+			:: Walk though every cpp file and compile unliked
+			for /f %%i in (%routerFilesPath%Compile_%1) DO (
+				SET "file=%%i"
+				CALL :outputFile !file!
+				SET "outputfile=!outputfile:src=bin\src!"
+				SET "outputDir=!outputfile!"
+				CALL :outputDir !outputFile!
+				
+				:: Call C++ Compiler set on language token 4
+				CALL %LOGGER% INFO+ "Compilling Java files: %%c -c !file! -o !outputfile!.%2"
+				%%c -c !file! -o !outputfile!.%2
 
-	:: If everything goes right, move the .exe compiled file to bin
-	if ["%ERRORLEVEL%"]==["0"] (
-		MOVE %mainName%.exe %targetPath%
+				:: If an error has been found, pause batch
+				if NOT ["%ERRORLEVEL%"]==["0"] (
+					cd %roothPath%
+					CALL %LOGGER% WARN "There was a problem compilling C"
+					EXIT /B 1
+				)
+			)
+		)
 	)
-
-	:: If an error has been found, pause batch
-	if NOT ["%ERRORLEVEL%"]==["0"] (
-		CALL %LOGGER% INFO "There was a problem compilling C"
-		PAUSE
-		EXIT /B 1
-	)
-	REM PAUSE
 
 cd %rootPath%
 GOTO :EOF
 
+:: Removes the file extension
+:outputFile
+	for /f "tokens=1,2 delims=." %%a in ("%1") do (
+		SET "outputfile=%%a"
+	)
+GOTO :EOF
 
+:: Create the path as the output needs
+:outputDir
+	SET "outDir="
+	SET "outDirTemp=%1"
+	
+	CALL :fit %1
+	SET "outDir=%outDir:~1%"
+    if NOT exist %outDir% (
+		MKDIR %outDir%
+	)
+GOTO :EOF
+
+:fit
+    SET "outDirTemp=%outDirTemp:*\=%"
+    @ECHO %1|find "\" >nul
+        if NOT ["%ERRORLEVEL%"]==["1"] (
+			for /f "tokens=1,2 delims=\" %%a in ("%1") do (
+				SET "outDir=%outDir%\%%a"
+			)
+
+        	CALL :fit %outDirTemp%
+        )
+GOTO :EOF
 
 :: Used to find the main class
 :findMainClass

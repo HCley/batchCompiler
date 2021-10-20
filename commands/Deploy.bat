@@ -29,60 +29,23 @@
 	CALL %LOGGER% INFO "Routering compiled files..."
 	CALL %resourcesPath%Router.bat 2
 
-	for /f "tokens=1,2 delims=, skip=1" %%l in (%assetsPath%languages) do (
 		:: Grab the paths of .java files found on src
-		if exist %routerFilesPath%Build_%%m (
+		for /f "tokens=1,2,4 delims=, skip=1" %%l in (%assetsPath%languages) DO if exist %routerFilesPath%Build_%%m (
+			SET "classFiles=" 
 			CALL %LOGGER% INFO "Concatenating all %%m source codes"
 			for /f %%i in (%routerFilesPath%Build_%%m) DO call :concat %%i
 			SET "language=%%l"
-			CALL :manifest %%m
-			if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
+			CALL :manifest %%m %%n
+			if NOT ["%ERRORLEVEL%"]==["0"] (
+				CAL %LOGGER% ERR "Error on compiling %%l" %ERRORLEVEL%
+				EXIT /B 1
+			)
 		)
 	)
 
 	CALL %LOGGER% WARN "The language does not need a deploy or do not have one."
 EXIT /B ["%ERRORLEVEL%"]
 :: END
-
-:: Create and jar file
-:generate.jar
-	if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
-	cd %targetPath%
-
-	:: Run over manifest and print file appVersion created and main class on terminal
-	CALL %LOGGER% INFO "Reading Manifest"
-	for /f "tokens=1,2 delims=" %%i in (%rootPath%manifest_java) DO CALL %LOGGER% VERS "%%i %%j"
-
-	:: Generate jarfile
-	CALL %LOGGER% INFO "Generating JAR package"
-	jar cvfm app.jar %rootPath%manifest_java %classFiles%
-
-	if ["%ERRORLEVEL%"]==["1"] (
-		cd %rootPath%
-		CALL %LOGGER% ERR "Not able to generate deploy Java."
-		EXIT /B 1
-	) else (
-		cd %rootPath%
-		:: Run jar file
-		START CMD /k CALL %commandsPath%Execute.bat
-	)
-EXIT /B 0
-
-
-:: Create and exe file
-:generate.exe
-	if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
-	cd %binPath%
-
-	:: Run over manifest and print file appVersion created and main class on terminal
-	CALL %LOGGER% INFO "Reading Manifest"
-	for /f "tokens=1,2 delims=" %%i in (%rootPath%manifest_c) DO CALL %LOGGER% INFO "%%i %%j"
-
-	CALL %LOGGER% INFO "!---- Running app ----!"
-	:: Run exe file
-	CALL %commandsPath%Execute.bat
-	TIMEOUT 5
-EXIT /B 0
 
 
 :: Define which is the program appVersion
@@ -112,11 +75,14 @@ EXIT /B 0
 		CALL :getMainName
 	)
 
-	GOTO :generateManifest %1
+	CALL :generateManifest %1 %2
 
-CALL %LOGGER% ERR "Unexpected error" "Deploy.bat 111"
-PAUSE
-EXIT /B 1
+CALL %LOGGER% INFO "Finished %1 %2"
+GOTO :EOF
+
+
+
+
 
 
 :: Called on manifest to generate the manifest or update the file
@@ -125,18 +91,21 @@ EXIT /B 1
 	if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
 	cd %rootPath%
 
-	@ECHO Manifest-Version: %appVersion% >%rootPath%manifest_%language%
+	@ECHO Manifest-Version: %appVersion%>%rootPath%manifest_%language%
 	if defined packageName (
-		@ECHO Main-Class: src%packageName%.%mainClassName% >>%rootPath%manifest_%language%
+		@ECHO Main-Class: src%packageName%.%mainClassName%>>%rootPath%manifest_%language%
 	) else (
-		@ECHO Main-Class: %mainClass% >>%rootPath%manifest_%language%
+		@ECHO Main-Class: %mainClass%>>%rootPath%manifest_%language%
 	)
 
-	if "%1" EQU "class" ( GOTO :generate.jar)
-	if "%1" EQU "exe" ( GOTO :generate.exe)
+	::Compilers section
+	CALL :generate.%2 %2
 
-CALL %LOGGER% ERR "Unexpected language type" "Deploy.bat 111"
-EXIT /B 1
+GOTO :EOF
+
+
+
+
 
 :: Used to find the main class
 :findMainClass
@@ -152,7 +121,7 @@ EXIT /B 1
 
 	for /f "tokens=1,2,3 delims=, skip=1" %%l in (%assetsPath%languages) DO (
 		if "%1" EQU "%%m" (
-			for /F "tokens=*" %%a in ('findstr /S /I /M /C:"%%n" *.%%l') do (
+			for /F "tokens=*" %%a in ('findstr /S /I /M /C:"%%n" *.%%l') DO (
 				CALL :removeExtension src\%%a
 			)
 		)
@@ -222,4 +191,60 @@ GOTO :EOF
     SET "mainClass=%mainClass:*\=%"
         @ECHO %mainClass%|find "\" >nul
             if NOT ["%ERRORLEVEL%"]==["1"] (CALL :convertToPackage %mainClass%)
+GOTO :EOF
+
+
+
+
+
+:: COMPILERS -----------------------------------------
+
+:: Create and jar file
+:generate.javac
+	if NOT ["%ERRORLEVEL%"]==["0"] EXIT /B 1
+	cd %targetPath%
+
+
+	:: Run over manifest and print file appVersion created and main class on terminal
+	CALL %LOGGER% INFO "Reading Manifest"
+	for /f "tokens=1,2 delims=" %%i in (%rootPath%manifest_java) DO CALL %LOGGER% VERS "%%i %%j"
+
+	:: Generate jarfile
+	CALL %LOGGER% INFO "Generating JAR package"
+	jar cvfm app.jar %rootPath%manifest_java %classFiles%
+
+	if ["%ERRORLEVEL%"]==["1"] (
+		cd %rootPath%
+		CALL %LOGGER% ERR "Not able to deploy Java."
+		EXIT /B 1
+	)
+
+cd %rootPath%
+GOTO :EOF
+
+
+:: Create and exe file
+:generate.c++
+	cd %targetPath%
+
+	:: Run over manifest and print file appVersion created and main class on terminal
+	CALL %LOGGER% INFO "Reading Manifest"
+	for /f "tokens=1,2 delims=" %%i in (%rootPath%manifest_cpp) DO CALL %LOGGER% INFO "%%i %%j"
+	
+	CALL %LOGGER% INFO "Chosing compiler"
+	for /f "tokens=4 delims=, skip=1" %%c in (%assetsPath%languages) DO (
+		if "%%c" EQU "%1" (
+			CALL %LOGGER% INFO "Generating EXE package"
+			%%c %classFiles% -o app.exe
+		)	
+	)
+
+	cd %rootPath%
+	if ["%ERRORLEVEL%"]==["1"] (
+		CALL %LOGGER% ERR "Not able to deploy C++."
+		EXIT /B 1
+	) ELSE (
+		START CMD /k "3ngine.bat execute"
+	)
+
 GOTO :EOF

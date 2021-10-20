@@ -9,6 +9,7 @@
 	SET "srcPath=%rootPath%src\"
 	SET "binPath=%rootPath%bin\"
 	SET "assetsPath=%resourcesPath%assets\"
+	SET "languagesPath=%assetsPath%languages"
 	SET "exportPath=%assetsPath%router_files\"
 	SET "LOGGER=%resourcesPath%Logger.bat"
 	SET "routerInvokeParam=%1"
@@ -27,16 +28,17 @@
 	)
 
 	:: Create a export folder if it doesn't exist
-	CALL %LOGGER% PROC "Creating bin folder"
+	CALL %LOGGER% INFO "Creating bin folder"
 	if NOT exist %exportPath% MKDIR %exportPath%
 
 cd %rootPath%
 :: Loop through all languages validating if exist on the projects folder
-for /f "tokens=%routerInvokeParam% delims=, skip=1" %%f in (%assetsPath%languages) DO (
-CALL %LOGGER% INFO "Searching routes through %searchThrough% folder for %%f ..."
+for /f "tokens=%routerInvokeParam% delims=, skip=1" %%f in (%languagesPath%) DO (
+	CALL %LOGGER% INFO "Searching routes through %searchThrough% folder for %%f ..."
 
-	:: Remove existing paths
+	rem :: Remove existing paths
 	CALL :clear %%f
+
 
 	:: Loop through all searchThrough folders and subfolders
 	:: Verify if do exist a .%%f_ file on the folder
@@ -59,12 +61,14 @@ EXIT /B 0
 		CALL %LOGGER% SAVE "Saved on file as %1\%2;"
 		GOTO :EOF
 	) || (
-		CALL %LOGGER% DISC "Thrown out - %1\%2"
+		CALL %LOGGER% EXCP "Thrown out - %1\%2"
 	)
-	GOTO :EOF
+GOTO :EOF
 
 :: Called on loop to clear all the files found before
 :clear
-	CALL %LOGGER% PROC "Removing %ExportName%%1"
-	if exist %exportPath%%ExportName%%1 del /f %exportPath%%ExportName%%1
-	GOTO :EOF
+	CALL %LOGGER% INFO "Removing %ExportName%%1"
+	if exist %exportPath%%ExportName%%1 (
+		del /f %exportPath%%ExportName%%1
+	)
+GOTO :EOF
